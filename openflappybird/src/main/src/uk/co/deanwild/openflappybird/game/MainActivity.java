@@ -40,7 +40,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 	// objects
 	private TimerHandler mTimer;
 	private SceneManager mSceneManager;
-	private ResourceManager mResourceManager;	
+	private ResourceManager mResourceManager;
 	private Scene mScene;
 	private Camera mCamera;
 
@@ -145,7 +145,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 					if(pipe.isOnScreen()){
 						pipe.move(SCROLL_SPEED);
 						if(pipe.collidesWith(mSceneManager.mBird.getSprite())){
-							gameOver();
+							// gameOver(); -- Continue playing
 						}
 
 						if(pipe.isCleared(mBirdXOffset)){							
