@@ -18,6 +18,7 @@ import org.andengine.input.touch.TouchEvent;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 
 import android.os.Environment;
+import android.os.Trace;
 import android.util.Log;
 
 public class MainActivity extends SimpleBaseGameActivity {
@@ -79,6 +80,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 			@Override
 			public void onUpdate(float pSecondsElapsed) {
 				// Log.i(mTrace, "Update start " + pSecondsElapsed);
+				Trace.beginSection("Camera::onUpdate");
 				start = System.currentTimeMillis();
 				switch(GAME_STATE){
 
@@ -108,6 +110,8 @@ public class MainActivity extends SimpleBaseGameActivity {
 				}
 				else if (GAME_STATE == STATE_PLAYING)
 					buffer += "u " + start + " " + System.currentTimeMillis() + " " + pSecondsElapsed + "\n";
+				
+				Trace.endSection();
 			}
 
 			private void ready(){
@@ -145,7 +149,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 					if(pipe.isOnScreen()){
 						pipe.move(SCROLL_SPEED);
 						if(pipe.collidesWith(mSceneManager.mBird.getSprite())){
-							// gameOver(); -- Continue playing
+							// gameOver(); -- Continue playing ---- by Echo
 						}
 
 						if(pipe.isCleared(mBirdXOffset)){							
@@ -194,6 +198,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 			public void onUpdate(float pSecondsElapsed) {
 
 				// Log.i(mTrace, "Scene::update " + pSecondsElapsed);
+				Trace.beginSection("Scene::onUpdate");
 				
 				switch(GAME_STATE){
 
@@ -211,6 +216,8 @@ public class MainActivity extends SimpleBaseGameActivity {
 				}		
 
 				super.onUpdate(pSecondsElapsed);
+				
+				Trace.endSection();
 			}
 		};
 
