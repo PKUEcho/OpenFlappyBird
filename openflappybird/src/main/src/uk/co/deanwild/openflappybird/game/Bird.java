@@ -18,7 +18,7 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.debug.Debug;
 
-import android.app.Activity;
+import android.os.Trace;
 
 
 public class Bird {
@@ -94,7 +94,9 @@ public class Bird {
 	}
 
 	public float move(){
-
+		
+		Trace.beginSection("bird:move");
+		
 		float newY = mSprite.getY() + mVerticalSpeed; // calculate the birds new height based on the current vertical speed
 		newY = Math.max(newY, 0); // don't allow through the ceiling
 		newY = Math.min(newY, MainActivity.FLOOR_BOUND); // don't allow through the floor
@@ -116,7 +118,9 @@ public class Bird {
 
 		// now apply bird angle based on current speed
 		mSprite.setRotation(mCurrentBirdAngle);
-
+		
+		Trace.endSection();
+		
 		return newY;
 	}
 

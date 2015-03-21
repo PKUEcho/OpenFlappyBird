@@ -18,8 +18,8 @@ import org.andengine.input.touch.TouchEvent;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 
 import android.os.Environment;
-import android.os.Trace;
 import android.util.Log;
+import uk.co.deanwild.openflappybird.game.mTrace;
 
 public class MainActivity extends SimpleBaseGameActivity {
 
@@ -55,7 +55,6 @@ public class MainActivity extends SimpleBaseGameActivity {
 	private float mBirdXOffset;
 	
 	// for trace
-	private final static String mTrace = "trace";
 	private String buffer = "";
 	private final static int MAX_BUFFER = 10240;
 	private String file_name = Environment.getExternalStorageDirectory().getPath() + "/codesign/flappybird.log";
@@ -63,15 +62,12 @@ public class MainActivity extends SimpleBaseGameActivity {
 	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
-
 		CAMERA_WIDTH = ScreenSizeHelper.calculateScreenWidth(this, CAMERA_HEIGHT);
-		
 		try {
 			out = new FileOutputStream(file_name, false);
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
-
 		mCamera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT){
 
 			private int mPipeSpawnCounter;
@@ -80,7 +76,8 @@ public class MainActivity extends SimpleBaseGameActivity {
 			@Override
 			public void onUpdate(float pSecondsElapsed) {
 				// Log.i(mTrace, "Update start " + pSecondsElapsed);
-				Trace.beginSection("Camera::onUpdate");
+				mTrace.beginSection("Camera::onUpdate");
+				mTrace.traceCounter(1, "pSecondsElpased", Math.round(pSecondsElapsed * 1000000));
 				start = System.currentTimeMillis();
 				switch(GAME_STATE){
 
@@ -111,7 +108,8 @@ public class MainActivity extends SimpleBaseGameActivity {
 				else if (GAME_STATE == STATE_PLAYING)
 					buffer += "u " + start + " " + System.currentTimeMillis() + " " + pSecondsElapsed + "\n";
 				
-				Trace.endSection();
+				mTrace.endSection();
+				
 			}
 
 			private void ready(){
@@ -142,7 +140,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 					mPipeSpawnCounter = 0;
 					spawnNewPipe();						
 				}
-
+				
 				// now render the pipes
 				for (int i = 0; i<pipes.size(); i++){
 					PipePair pipe = pipes.get(i);
@@ -159,7 +157,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 						pipe.destroy();
 						pipes.remove(pipe);							
 					}					
-				}	
+				}
 			}
 		};
 
@@ -198,7 +196,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 			public void onUpdate(float pSecondsElapsed) {
 
 				// Log.i(mTrace, "Scene::update " + pSecondsElapsed);
-				Trace.beginSection("Scene::onUpdate");
+				mTrace.beginSection("Scene::onUpdate");
 				
 				switch(GAME_STATE){
 
@@ -217,7 +215,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 
 				super.onUpdate(pSecondsElapsed);
 				
-				Trace.endSection();
+				mTrace.endSection();
 			}
 		};
 
@@ -230,7 +228,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 			public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 				if(pSceneTouchEvent.isActionDown()){
 					
-					Log.i(mTrace, "Touch Event");
+					Log.i("Echo", "Touch Event -- " + Thread.currentThread().getName());
 					
 					switch(GAME_STATE){
 
@@ -248,6 +246,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 						break;	
 					}								
 				}
+				mTrace.asyncTraceEnd(10, "TouchEvent", 2);
 				return false;
 			}
 		});		
