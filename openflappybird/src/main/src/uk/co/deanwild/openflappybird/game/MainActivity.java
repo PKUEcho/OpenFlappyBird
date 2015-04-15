@@ -55,30 +55,30 @@ public class MainActivity extends SimpleBaseGameActivity {
 	private float mBirdXOffset;
 	
 	// for trace
-	private String buffer = "";
-	private final static int MAX_BUFFER = 10240;
-	private String file_name = Environment.getExternalStorageDirectory().getPath() + "/codesign/flappybird.log";
-	private FileOutputStream out = null;
+	// private String buffer = "";
+	// private final static int MAX_BUFFER = 10240;
+	// private String file_name = Environment.getExternalStorageDirectory().getPath() + "/codesign/flappybird.log";
+	// private FileOutputStream out = null;
 	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
 		CAMERA_WIDTH = ScreenSizeHelper.calculateScreenWidth(this, CAMERA_HEIGHT);
-		try {
+		/*try {
 			out = new FileOutputStream(file_name, false);
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
-		}
+		}*/
 		mCamera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT){
 
 			private int mPipeSpawnCounter;
-			private long start;		// For trace
+			// private long start;		// For trace
 
 			@Override
 			public void onUpdate(float pSecondsElapsed) {
-				// Log.i(mTrace, "Update start " + pSecondsElapsed);
+				Log.i("Echo", "Camera::onUpdate " + pSecondsElapsed);
 				mTrace.beginSection("Camera::onUpdate");
 				mTrace.traceCounter(1, "pSecondsElpased", Math.round(pSecondsElapsed * 1000000));
-				start = System.currentTimeMillis();
+				// start = System.currentTimeMillis();
 				switch(GAME_STATE){
 
 				case STATE_READY:
@@ -96,7 +96,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 
 				super.onUpdate(pSecondsElapsed);
 
-				if (buffer.length() > MAX_BUFFER) {
+				/*if (buffer.length() > MAX_BUFFER) {
 					// Write trace to /sdcard/flappybird.log 
 					try {
 						out.write(buffer.getBytes());
@@ -106,7 +106,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 					}
 				}
 				else if (GAME_STATE == STATE_PLAYING)
-					buffer += "u " + start + " " + System.currentTimeMillis() + " " + pSecondsElapsed + "\n";
+					buffer += "u " + start + " " + System.currentTimeMillis() + " " + pSecondsElapsed + "\n";*/
 				
 				mTrace.endSection();
 				
@@ -195,7 +195,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 			@Override
 			public void onUpdate(float pSecondsElapsed) {
 
-				// Log.i(mTrace, "Scene::update " + pSecondsElapsed);
+				// Log.i("Echo", "Scene::onUpdate " + pSecondsElapsed);
 				mTrace.beginSection("Scene::onUpdate");
 				
 				switch(GAME_STATE){
@@ -226,30 +226,36 @@ public class MainActivity extends SimpleBaseGameActivity {
 
 			@Override
 			public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
+				
+				Log.i("Echo", "Scene:onSecenTouchEvent " + pSceneTouchEvent.getAction() + " -- " + Thread.currentThread().getName());
+				
 				if(pSceneTouchEvent.isActionDown()){
 					
-					Log.i("Echo", "Touch Event -- " + Thread.currentThread().getName());
+					// Log.i("Echo", "Touch Event Starts -- " + Thread.currentThread().getName());
+					mTrace.beginSection("Scene::onTouch");
 					
 					switch(GAME_STATE){
 
 					case STATE_READY:
-						startPlaying();
+						startPlaying(pSceneTouchEvent);
 						break;
 
 					case STATE_PLAYING:
-						buffer += "t " + System.currentTimeMillis() + "\n";
-						mSceneManager.mBird.flap();
+						// buffer += "t " + System.currentTimeMillis() + "\n";
+						mSceneManager.mBird.flap(pSceneTouchEvent);
 						break;
 
 					case STATE_DEAD:
 						//restartGame();
 						break;	
-					}								
+					}
+					
+					mTrace.endSection();
+					// mTrace.asyncTraceEnd(10, "TouchEvent", 2);
 				}
-				mTrace.asyncTraceEnd(10, "TouchEvent", 2);
 				return false;
 			}
-		});		
+		});
 		
 		updateScore();
 
@@ -273,7 +279,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 	
 	// STATE SWITCHES
 
-	private void startPlaying(){
+	private void startPlaying(TouchEvent te){
 		
 		GAME_STATE = STATE_PLAYING;	
 		
@@ -283,7 +289,7 @@ public class MainActivity extends SimpleBaseGameActivity {
 		mScene.detachChild(mSceneManager.mInstructionsSprite);
 		mScene.detachChild(mSceneManager.mCopyText);
 		updateScore();
-		mSceneManager.mBird.flap();
+		mSceneManager.mBird.flap(te);
 	}
 
 	private void gameOver(){
@@ -339,10 +345,10 @@ public class MainActivity extends SimpleBaseGameActivity {
 	@Override
 	public final void onDestroy() {
 		super.onDestroy();
-		try {
+		/*try {
 			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 }

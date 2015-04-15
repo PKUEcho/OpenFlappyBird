@@ -2,10 +2,12 @@ package uk.co.deanwild.openflappybird.game;
 
 import java.io.IOException;
 
+import org.andengine.Trace.EventTracer;
 import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
+import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -17,8 +19,6 @@ import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.debug.Debug;
-
-import android.os.Trace;
 
 
 public class Bird {
@@ -38,10 +38,10 @@ public class Bird {
 	protected static final float FLAP_ANGLE_DRAG = 4.0f;
 	protected static final float BIRD_FLAP_ANGLE_POWER = 15.0f;
 
-	private AnimatedSprite mSprite;	
+	private AnimatedSprite mSprite;
 
-	protected float mAcceleration = GRAVITY;
-	protected float mVerticalSpeed;	
+	protected FloatClass mAcceleration = new FloatClass(GRAVITY);
+	protected FloatClass mVerticalSpeed = new FloatClass();	
 	protected float mCurrentBirdAngle = BIRD_MAX_FLAP_ANGLE;
 
 	//bird
@@ -95,19 +95,20 @@ public class Bird {
 
 	public float move(){
 		
-		Trace.beginSection("bird:move");
-		
-		float newY = mSprite.getY() + mVerticalSpeed; // calculate the birds new height based on the current vertical speed
+		float newY = mSprite.getY() + mVerticalSpeed.getValue(); // calculate the birds new height based on the current vertical speed
+		EventTracer.rmEventObject(mVerticalSpeed);
 		newY = Math.max(newY, 0); // don't allow through the ceiling
 		newY = Math.min(newY, MainActivity.FLOOR_BOUND); // don't allow through the floor
 		mSprite.setY(newY); //apply the new position
 
 		// now calculate the new speed
-		mAcceleration += GRAVITY; // always applying gravity to current acceleration
-		mVerticalSpeed += mAcceleration; // always applying the current acceleration tp the current speed
-		mVerticalSpeed = Math.min(mVerticalSpeed, MAX_DROP_SPEED); // but capping it to a terminal velocity (science bitch)
+		mAcceleration.setValue(GRAVITY + mAcceleration.getValue()); // always applying gravity to current acceleration
+		mVerticalSpeed.setValue(mAcceleration.getValue() + mVerticalSpeed.getValue()); // always applying the current acceleration tp the current speed
+		mVerticalSpeed.setValue(Math.min(mVerticalSpeed.getValue(), MAX_DROP_SPEED)); // but capping it to a terminal velocity (science bitch)
+		EventTracer.proEventObject(mAcceleration, mSprite, "Sprite");
+		EventTracer.rmEventObject(mAcceleration);
 
-		if(mVerticalSpeed <= (FLAP_POWER)){
+		if(mVerticalSpeed.getValue() <= (FLAP_POWER)){
 			mCurrentBirdAngle -= BIRD_FLAP_ANGLE_POWER;						
 		}else{
 			mCurrentBirdAngle += FLAP_ANGLE_DRAG;
@@ -119,14 +120,14 @@ public class Bird {
 		// now apply bird angle based on current speed
 		mSprite.setRotation(mCurrentBirdAngle);
 		
-		Trace.endSection();
-		
 		return newY;
 	}
 
-	public void flap(){
-		mVerticalSpeed = (-FLAP_POWER);
-		mAcceleration = 0;
+	public void flap(TouchEvent te){
+		mVerticalSpeed.setValue(-FLAP_POWER);
+		EventTracer.proEventObject(te, mVerticalSpeed, "VerticalSpeed");
+		mAcceleration.setValue(0);
+		EventTracer.proEventObject(te, mAcceleration, "Acceleration");
 		mJumpSound.play();
 	}	
 	
@@ -148,4 +149,12 @@ public class Bird {
 		return mSprite;
 	}
 
+}
+
+class FloatClass {
+	private float val;
+	public FloatClass() {val = 0;}
+	public FloatClass(float _val) {val = _val;}
+	public float getValue() {return val;}
+	public void setValue(float _val) {val = _val;}
 }
